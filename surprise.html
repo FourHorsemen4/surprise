@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Will You Be My Valentine?</title>
+  <style>
+    body {
+      background-color: #ffc0cb; /* Light pink background */
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      color: #ff69b4;
+      font-size: 2.5rem;
+      margin-top: 20px;
+    }
+    /* Container for the buttons */
+    #buttonContainer {
+      position: relative;
+      width: 100%;
+      height: 50vh; /* half the viewport height */
+      /* You can uncomment the next line to see the container's border for testing */
+      /* border: 1px solid #ccc; */
+    }
+    /* Yes button stays centered and grows on No clicks */
+    #yesBtn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      background-color: #ff1493;
+      color: white;
+      padding: 10px 20px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform 0.3s, font-size 0.3s;
+      z-index: 2;
+    }
+    /* No button will teleport around inside the container */
+    #noBtn {
+      position: absolute;
+      left: 70%;  /* initial position */
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      color: #ff1493;
+      padding: 10px 20px;
+      font-size: 1.5rem;
+      border: 2px solid #ff1493;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: left 0.3s, top 0.3s;
+      z-index: 1;
+    }
+    /* Celebratory message styling */
+    #message {
+      margin-top: 20px;
+      font-size: 2rem;
+      color: #ff69b4;
+      position: relative;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <h1>Will You Be My Valentine? <span>🥰</span></h1>
+  
+  <!-- Button container -->
+  <div id="buttonContainer">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+  </div>
+  
+  <div id="message"></div>
+  
+  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const message = document.getElementById('message');
+    const buttonContainer = document.getElementById('buttonContainer');
+    
+    let scaleFactor = 1;
+    let accepted = false;
+    
+    // Function to reposition the No button randomly within the container without overlapping the Yes button
+    function repositionNoButton() {
+      const yesRect = yesBtn.getBoundingClientRect();
+      const containerRect = buttonContainer.getBoundingClientRect();
+      const noWidth = noBtn.offsetWidth;
+      const noHeight = noBtn.offsetHeight;
+      
+      // Maximum left and top values within the container
+      const maxLeft = containerRect.width - noWidth;
+      const maxTop = containerRect.height - noHeight;
+      
+      let newLeft, newTop;
+      let attempts = 0;
+      let candidate = {};
+      
+      // Try up to 100 times to find a spot where No doesn't overlap Yes
+      do {
+        newLeft = Math.random() * maxLeft;
+        newTop = Math.random() * maxTop;
+        candidate.left = containerRect.left + newLeft;
+        candidate.top = containerRect.top + newTop;
+        candidate.right = candidate.left + noWidth;
+        candidate.bottom = candidate.top + noHeight;
+        attempts++;
+      } while (attempts < 100 && !(
+        candidate.right < yesRect.left ||
+        candidate.left > yesRect.right ||
+        candidate.bottom < yesRect.top ||
+        candidate.top > yesRect.bottom
+      ));
+      
+      // Apply the new position (removing the centering transform)
+      noBtn.style.left = newLeft + 'px';
+      noBtn.style.top = newTop + 'px';
+      noBtn.style.transform = 'none';
+    }
+    
+    // When hovering over the No button, teleport it to a new random spot (if Yes hasn't been clicked)
+    noBtn.addEventListener('mouseover', () => {
+      if (!accepted) {
+        repositionNoButton();
+      }
+    });
+    
+    // When clicking the No button, grow the Yes button and reposition the No button
+    noBtn.addEventListener('click', () => {
+      if (!accepted) {
+        scaleFactor += 0.2;
+        // Maintain the centering translation along with the new scale
+        yesBtn.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
+        repositionNoButton();
+      }
+    });
+    
+    // When clicking the Yes button, display the celebratory message and disable further No button interaction
+    yesBtn.addEventListener('click', () => {
+      accepted = true;
+      message.innerHTML = 'Yey! 😍';
+      // Disable further interaction with the No button
+      noBtn.style.pointerEvents = 'none';
+    });
+  </script>
+</body>
+</html>
